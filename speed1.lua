@@ -1,123 +1,96 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "VMAXHUB | Survive God",
-   LoadingTitle = "1234Завантаження систем...",
+   Name = "VMAXHUB | Final Fix",
+   LoadingTitle = "123Запуск...",
    LoadingSubtitle = "by vibewmax",
 })
 
 local MainTab = Window:CreateTab("Головна", 4483362458)
 local CombatTab = Window:CreateTab("Бой", 4483362458)
 
--- Налаштування (Змінні)
 _G.TargetSpeed = 16
 _G.AntiSlow = true
 _G.InfJump = false
 _G.KillAura = false
 _G.AuraRange = 15
 
--- [ВКЛАДКА ГОЛОВНА]
 MainTab:CreateSlider({
-   Name = "Швидкість бігу (WalkSpeed)",
-   Range = {16, 250},
+   Name = "Speed",
+   Range = {16, 200},
    Increment = 1,
-   Suffix = "spd",
    CurrentValue = 16,
-   Callback = function(Value)
-       _G.TargetSpeed = Value
-   end,
+   Callback = function(Value) _G.TargetSpeed = Value end,
 })
 
 MainTab:CreateToggle({
-   Name = "Anti-Slow (Стабільний біг)",
+   Name = "Anti-Slow",
    CurrentValue = true,
-   Callback = function(Value)
-       _G.AntiSlow = Value
-   end,
+   Callback = function(Value) _G.AntiSlow = Value end,
 })
 
 MainTab:CreateToggle({
-   Name = "Нескінченний стрибок",
+   Name = "Inf Jump",
    CurrentValue = false,
-   Callback = function(Value)
-       _G.InfJump = Value
-   end,
+   Callback = function(Value) _G.InfJump = Value end,
 })
 
--- [ВКЛАДКА БОЙ]
 CombatTab:CreateToggle({
-   Name = "Kill Aura (Авто-атака)",
+   Name = "Kill Aura",
    CurrentValue = false,
-   Callback = function(Value)
-       _G.KillAura = Value
-   end,
+   Callback = function(Value) _G.KillAura = Value end,
 })
 
 CombatTab:CreateSlider({
-   Name = "Радіус аури",
+   Name = "Aura Range",
    Range = {5, 30},
    Increment = 1,
-   Suffix = " studs",
    CurrentValue = 15,
-   Callback = function(Value)
-       _G.AuraRange = Value
-   end,
+   Callback = function(Value) _G.AuraRange = Value end,
 })
 
--- ЛОГІКА ANTI-SLOW & SPEED
-RunService.Heartbeat:Connect(function()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        if _G.AntiSlow and char.Humanoid.WalkSpeed ~= _G.TargetSpeed then
-            char.Humanoid.WalkSpeed = _G.TargetSpeed
-        end
-    end
-end)
-
--- ЛОГІКА НЕКСІНЧЕННОГО СТРИБКА
-UserInputService.JumpRequest:Connect(function()
-    if _G.InfJump then
+-- Логіка (Швидкість)
+game:GetService("RunService").Heartbeat:Connect(function()
+    pcall(function()
         local char = game.Players.LocalPlayer.Character
-        if char and char:FindFirstChildOfClass("Humanoid") then
-            char:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+        if char and char:FindFirstChild("Humanoid") then
+            if _G.AntiSlow and char.Humanoid.WalkSpeed ~= _G.TargetSpeed then
+                char.Humanoid.WalkSpeed = _G.TargetSpeed
+            end
         end
+    end)
+end)
+
+-- Логіка (Стрибок)
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if _G.InfJump then
+        pcall(function()
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+        end)
     end
 end)
 
--- ЛОГІКА KILL AURA (ПОКРАЩЕНА)
-RunService.Stepped:Connect(function()
+-- Логіка (Аура)
+game:GetService("RunService").Stepped:Connect(function()
     if _G.KillAura then
-        local player = game.Players.LocalPlayer
-        local char = player.Character
+        local char = game.Players.LocalPlayer.Character
         local tool = char and char:FindFirstChildOfClass("Tool")
-        
         if tool and char:FindFirstChild("HumanoidRootPart") then
-            -- Шукаємо ворогів по всьому Workspace
-            for _, v in pairs(game.Workspace:GetDescendants()) do
-                if not _G.KillAura then break end
-                
-                -- Перевірка: чи це Humanoid, чи він живий і чи це не ти
-                if v:IsA("Humanoid") and v.Parent ~= char and v.Health > 0 then
-                    local targetRoot = v.Parent:FindFirstChild("HumanoidRootPart") or v.Parent:FindFirstChild("Head")
-                    
-                    if targetRoot then
-                        local dist = (char.HumanoidRootPart.Position - targetRoot.Position).Magnitude
-                        
-                        if dist <= _G.AuraRange then
-                            -- Активація зброї
-                            tool:Activate()
-                            
-                            -- Нанесення шкоди через дотик Handle
-                            local handle = tool:FindFirstChild("Handle")
-                            if handle then
-                                firetouchinterest(handle, targetRoot, 0)
-                                firetouchinterest(handle, targetRoot, 1)
-                            end
-                            break -- Б'ємо одну ціль за раз для швидкості
+            for _, v in pairs(game.Workspace:GetChildren()) do
+                local eHuman = v:FindFirstChild("Humanoid")
+                local eRoot = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Head")
+                if eHuman and eHuman.Health > 0 and v ~= char and eRoot then
+                    if (char.HumanoidRootPart.Position - eRoot.Position).Magnitude <= _G.AuraRange then
+                        tool:Activate()
+                        local h = tool:FindFirstChild("Handle")
+                        if h then
+                            firetouchinterest(h, eRoot, 0)
+                            firetouchinterest(h, eRoot, 1)
                         end
+                        break
                     end
                 end
             end
         end
+    end
+end)
