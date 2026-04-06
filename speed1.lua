@@ -2,9 +2,9 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "Survive the Apocalypse | Speed & Jump",
-   LoadingTitle = "Завантаження...",
-   LoadingSubtitle = "by Gemini",
+   Name = "VMAXHUB Survive the Apocalypse | Speed & Jump",
+   LoadingTitle = "loading...",
+   LoadingSubtitle = "by vibewmax",
 })
 
 local MainTab = Window:CreateTab("Головна", 4483362458)
